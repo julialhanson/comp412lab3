@@ -377,6 +377,7 @@ def rename(filename):
         curr.printVR()
         listidx -= 1
         curr = curr.prev
+    print(nodeList)
     return nodeList, vrName
     #return head, vrName
     # node = head 
@@ -469,8 +470,10 @@ def buildgraph(filename):
 def weightit(roots, map):
     map4 = map
     queue = deque()
+    
     for root in roots:
         root.weight = 10 * weights[map4[root.index].opcode] + len(root.kids)
+        print("WEIGHT OF ROOT IS " + str(root.weight))
         queue.append(root)
     while queue:
         node = queue.popleft()
@@ -520,15 +523,20 @@ def schedule(leaves, map):
     dummynop = IRNode(-1)
     dummynop.opcode = NOP
    
-    while (len(readySet) + len(activeSet)) != 0:
+    while ((len(readySet) + len(activeSet)) != 0) and cycle < 3:
+        print("OP WEIGT IS " + str(op1.weight))
+        
         for leaf in readySet: 
+            print("LEAF WEIGHT IS" + str(leaf.weight))
             if leaf.weight > op1.weight:
                 op1 = leaf
+        print("op INDEX S" + str(op1.index))
         if (op1.index != -3):
             readySet.remove(op1) 
             op1.status = ACTIVE
             op1.startcycle = cycle
             activeSet.add(op1)
+            
         
         op1opcode = map2[op1.index].opcode
         
@@ -560,11 +568,11 @@ def schedule(leaves, map):
             op2 = temp
         
         node1 = dummynop
-        if op1.index != -3:
+        if op1.index == -3:
             node1 = map2[op1.index]
         
         node2 = dummynop
-        if op2.index != -3:
+        if op2.index == -3:
             node2 = map2[op2.index]
 
         f0, f1 = printScheduleNodes(node1, node2) 
