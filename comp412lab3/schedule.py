@@ -470,18 +470,26 @@ def buildgraph(filename):
 def weightit(roots, map):
     map4 = map
     queue = deque()
-    
+    print("GOT IN WEIGHT")
     for root in roots:
         root.weight = 10 * weights[map4[root.index].opcode] + len(root.kids)
         print("WEIGHT OF ROOT IS " + str(root.weight))
         queue.append(root)
     while queue:
+        print("yes queue")
+        
         node = queue.popleft()
+        print("kid of nodes is " + str(node.kids))
+        print("NEW LEN QUEUE IS " + str(len(queue)))
         for kid in node.kids:
+            print("OLD WEIGHT IS " + str(kid[0]))
+            
             newweight = node.weight + 10 * kid[0] + len(kid.kids) - len(node.kids)
             if (newweight > kid[1].weight):
+                print("weight changed")
                 kid.weight = newweight
-                queue.push(kid)
+                queue.append(kid)
+            print("NEW WEIGHT IS " + str(kid[1].weight))
    
 def printScheduleNodes(node1, node2):
     str1 = ""
@@ -523,6 +531,7 @@ def schedule(leaves, map):
     dummynop = IRNode(-1)
     dummynop.opcode = NOP
    
+    print("LENGTH OF ELAVES IS" + str(len(leaves)))
     while ((len(readySet) + len(activeSet)) != 0) and cycle < 3:
         print("OP WEIGT IS " + str(op1.weight))
         
@@ -532,7 +541,8 @@ def schedule(leaves, map):
                 op1 = leaf
         print("op INDEX S" + str(op1.index))
         if (op1.index != -3):
-            readySet.remove(op1) 
+            readySet.remove(op1)
+            
             op1.status = ACTIVE
             op1.startcycle = cycle
             activeSet.add(op1)
@@ -604,15 +614,6 @@ def schedule(leaves, map):
                     if allgood == True:
                         kid[1].status == READY
                 
-        
-                          
-                  
-            
-        
-    
-            
-                
-           
     return
 
 if __name__ == "__main__":
