@@ -377,7 +377,7 @@ def rename(filename):
         curr.printVR()
         listidx -= 1
         curr = curr.prev
-    print(nodeList)
+    # print(nodeList)
     return nodeList, vrName
     #return head, vrName
     # node = head 
@@ -419,7 +419,7 @@ def buildgraph(filename):
                 if nodes[i].nu3 == float('inf'):
                     roots.add(newnode)
             if nodes[i].vr1 != INVALID:
-                parentNode = map1[nodes[i]]
+                parentNode = map1[nodes[i].vr1]
                 parentNode.kids.add((weights[nodes[parentNode.index].opcode], newnode))
                 newnode.parents.add((weights[nodes[parentNode.index].opcode], parentNode))
             if nodes[i].vr2 != INVALID:
@@ -429,7 +429,7 @@ def buildgraph(filename):
         
         if nodes[i].opcode == OUTPUT:
             for item in outputs:
-                parentNode = map1[item]
+                parentNode = item
                 parentNode.kids.add((1, newnode))
                 newnode.parents.add((1, parentNode))
             outputs.add(newnode)
@@ -476,6 +476,7 @@ def weightit(roots, map):
     for root in roots:
         root.weight = 10 * weights[map4[root.index].opcode] + len(root.kids)
         print("WEIGHT OF ROOT IS " + str(root.weight))
+        print(root.parents)
         queue.append(root)
     while queue:
         print("yes queue")
@@ -483,15 +484,15 @@ def weightit(roots, map):
         node = queue.popleft()
         print("kid of nodes is " + str(node.kids))
         print("NEW LEN QUEUE IS " + str(len(queue)))
-        for kid in node.kids:
-            print("OLD WEIGHT IS " + str(kid[0]))
+        for parent in node.parents:
+            print("OLD WEIGHT IS " + str(parent[0]))
             
-            newweight = node.weight + 10 * kid[0] + len(kid.kids) - len(node.kids)
-            if (newweight > kid[1].weight):
+            newweight = node.weight + 10 * parent[0] + len(parent[1].kids) - len(node.kids)
+            if (newweight > parent[1].weight):
                 print("weight changed")
-                kid.weight = newweight
-                queue.append(kid)
-            print("NEW WEIGHT IS " + str(kid[1].weight))
+                parent[1].weight = newweight
+                queue.append(parent[1])
+            print("NEW WEIGHT IS " + str(parent[1].weight))
    
 def printScheduleNodes(node1, node2):
     str1 = ""
@@ -538,11 +539,12 @@ def schedule(leaves, map):
         print("OP WEIGT IS " + str(op1.weight))
         
         for leaf in readySet: 
-            print("LEAF WEIGHT IS" + str(leaf.weight))
+            print("LEAF WEIGHT IS " + str(leaf.weight))
             if leaf.weight > op1.weight:
                 op1 = leaf
         print("op INDEX S" + str(op1.index))
         if (op1.index != -3):
+            print(readySet)
             readySet.remove(op1)
             
             op1.status = ACTIVE
@@ -608,7 +610,7 @@ def schedule(leaves, map):
             if cycle - anode.startcycle == 1:
                 for kid in anode.kids:
                     allgood = True
-                    for parent in kid.parents:
+                    for parent in kid[1].parents:
                         if (parent[1].status == RETIRED or (parent[1].status == ACTIVE and parent[0] == 1)):
                             continue
                         else:
