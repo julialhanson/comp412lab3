@@ -406,6 +406,7 @@ def buildgraph(filename):
 
     reads = set()
     nodes, vrName = rename(filename)
+    
     map1 = [None for i in range(vrName)]
     for i in range(len(nodes)):
         if nodes[i] == None:
@@ -418,7 +419,7 @@ def buildgraph(filename):
                 if nodes[i].nu3 == float('inf'):
                     roots.add(newnode)
             if nodes[i].vr1 != INVALID:
-                parentNode = map1[nodes[i].vr1]
+                parentNode = map1[nodes[i]]
                 parentNode.kids.add((weights[nodes[parentNode.index].opcode], newnode))
                 newnode.parents.add((weights[nodes[parentNode.index].opcode], parentNode))
             if nodes[i].vr2 != INVALID:
@@ -447,6 +448,7 @@ def buildgraph(filename):
             for read in reads:
                 parentNode = read
                 parentNode.kids.add((1, newnode))
+                
                 newnode.parents.add((1, parentNode))
             mrs = newnode
             
