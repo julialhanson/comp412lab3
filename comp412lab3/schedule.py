@@ -506,7 +506,8 @@ def printScheduleNodes(node1, node2):
     elif (node1.opcode == ADD or node1.opcode == SUB or node1.opcode == MULT or node1.opcode == LSHIFT or node1.opcode == RSHIFT):
         str1 = (f"{wordArr[node1.opcode]} r{node1.vr1}, r{node1.vr2} => r{node1.vr3}")
     elif (node1.opcode == OUTPUT):
-        str1 = (f"{wordArr[node1.opcode]} {node1.vr1}")
+        #print("SOMETHING HAPPENS HERE")
+        str1 = (f"{wordArr[node1.opcode]} {node1.sr1}")
     else:
         str1 = (f"{wordArr[node1.opcode]}")  
             
@@ -519,14 +520,17 @@ def printScheduleNodes(node1, node2):
     elif (node2.opcode == ADD or node2.opcode == SUB or node2.opcode == MULT or node2.opcode == LSHIFT or node2.opcode == RSHIFT):
         str2 = (f"{wordArr[node2.opcode]} r{node2.vr1}, r{node2.vr2} => r{node2.vr3}")
     elif (node1.opcode == OUTPUT):
-        str2 = (f"{wordArr[node2.opcode]} {node2.vr1}")
+        #print("SOMETHING HAPPENS HERE 2")
+        str2 = (f"{wordArr[node2.opcode]} {node2.sr1}")
     else:
         str2 = (f"{wordArr[node2.opcode]}") 
     
     return str1, str2                
                
 def schedule(leaves, map):
+    
     cycle = 1
+    
     readySet = leaves
     map2 = map
     activeSet = set()
@@ -534,25 +538,31 @@ def schedule(leaves, map):
     dummynop = IRNode(-1)
     dummynop.opcode = NOP
    
-    print("LENGTH OF ELAVES IS" + str(len(leaves)))
-    while ((len(readySet) + len(activeSet)) != 0) and cycle < 3:
-        print("OP WEIGT IS " + str(op1.weight))
-        
+    while ((len(readySet) + len(activeSet)) != 0):
+        print("NEW CYCLE NEW CYCLE ------------------- " + str(cycle))
+        op1 = ScheduleNode(-3)
+        i = 0
         for leaf in readySet: 
-            print("LEAF WEIGHT IS " + str(leaf.weight))
+            # print("new leaf weight is " + str(leaf.weight))
+            # print("old op weight is " + str(op1.weight))
             if leaf.weight > op1.weight:
                 op1 = leaf
-        print("op INDEX S" + str(op1.index))
+                # print("op1 updated")
         if (op1.index != -3):
-            print(readySet)
             readySet.remove(op1)
-            
             op1.status = ACTIVE
             op1.startcycle = cycle
             activeSet.add(op1)
             
+        ### this got here and makes enough sense, it did go through the weights and update properly    
         
         op1opcode = map2[op1.index].opcode
+        #if op1opcode == OUTPUT:
+            #print("output node is " + str(map2[op1.index])) 
+        # op1node = map2[op1.index]
+        # op1node.printVR()
+        # print("op1 index is " + str(op1.index))
+        # print("#########")
         
         op2 = ScheduleNode(-3)
         for leaf in readySet:
@@ -563,6 +573,7 @@ def schedule(leaves, map):
             if leafop == MULT and op1opcode == MULT:
                 continue
             if leafop == OUTPUT and op1opcode == OUTPUT:
+                print("does it go in here?")
                 continue
             if leaf.weight > op2.weight:
                 op2 = leaf
@@ -571,7 +582,10 @@ def schedule(leaves, map):
             activeSet.add(op2)
             op2.status = ACTIVE
             op2.startcycle = cycle
-            
+        # print("After finding op1 and op1, the length of the ready set is " + str(len(readySet)) + " and the length of the active set is " + str(len(activeSet)))
+        # print("op2 is " )
+        # map2[op2.index].printVR()
+        # print("########")
         if map2[op1.index].opcode == MULT:
             temp = op1
             op1 = op2
@@ -582,11 +596,11 @@ def schedule(leaves, map):
             op2 = temp
         
         node1 = dummynop
-        if op1.index == -3:
+        if op1.index != -3:
             node1 = map2[op1.index]
         
         node2 = dummynop
-        if op2.index == -3:
+        if op2.index != -3:
             node2 = map2[op2.index]
 
         f0, f1 = printScheduleNodes(node1, node2) 
@@ -594,20 +608,15 @@ def schedule(leaves, map):
         print("[ " + f0 + " ; " + f1 + " ]")   
         
         cycle += 1
-        
+        # print("length of active set is " + str(len(activeSet)))
+        to_be_retired = set()
         for anode in activeSet:
-            if weights[map2[anode.index].opcode] - cycle == 0:
-                anode.status == RETIRED
-                for kid in anode.kids:
-                    allgood = True
-                    for parent in kid.parents:
-                        if (parent[1].status == RETIRED or (parent[1].status == ACTIVE and parent[0] == 1)):
-                            continue
-                        else:
-                            allgood = False
-                    if allgood == True:
-                        kid[1].status == READY
-            if cycle - anode.startcycle == 1:
+            # print("anode is " + str(map2[anode.index].printVR()))
+            nodeweight = weights[map2[anode.index].opcode]
+            print("Node weight is " + str(nodeweight) + " its startcycle " + str(anode.startcycle) + " current cycle " + str(cycle))
+            if nodeweight + anode.startcycle - cycle == 0:
+                anode.status = RETIRED
+                to_be_retired.add(anode)
                 for kid in anode.kids:
                     allgood = True
                     for parent in kid[1].parents:
@@ -616,8 +625,36 @@ def schedule(leaves, map):
                         else:
                             allgood = False
                     if allgood == True:
+                        print("it added a kid")
+                        if (kid[1].status == READY):
+                            print("BAD")
                         kid[1].status == READY
-                
+                        readySet.add(kid[1])
+                        # print("node added is ")
+                        map2[kid[1].index].printVR
+            elif cycle - anode.startcycle == 1:
+                for kid in anode.kids:
+                    allgood = True
+                    for parent in kid[1].parents:
+                        print("new parent")
+                        map2[parent[1].index].printVR()
+                        if (parent[1].status == RETIRED or (parent[1].status == ACTIVE and parent[0] == 1)):
+                            continue
+                        else:
+                            allgood = False
+                    if allgood == True:
+                        print("it added a kid")
+                        if (kid[1].status == READY):
+                            print("BAD")
+                        kid[1].status == READY
+                        readySet.add(kid[1])
+        for anode in to_be_retired:
+            if anode.status == RETIRED:
+                activeSet.remove(anode)
+                # print("NODE REMOVED")
+                # map2[anode.index].printVR()
+        # print("length of ready set is " + str(len(readySet)))
+        # print("length of active set is " + str(len(activeSet)))
     return
 
 if __name__ == "__main__":
