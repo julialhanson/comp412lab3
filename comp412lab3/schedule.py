@@ -539,7 +539,7 @@ def schedule(leaves, map):
     dummynop.opcode = NOP
    
     while ((len(readySet) + len(activeSet)) != 0):
-        print("NEW CYCLE NEW CYCLE ------------------- " + str(cycle))
+        #print("NEW CYCLE NEW CYCLE ------------------- " + str(cycle))
         op1 = ScheduleNode(-3)
         i = 0
         for leaf in readySet: 
@@ -613,40 +613,36 @@ def schedule(leaves, map):
         for anode in activeSet:
             # print("anode is " + str(map2[anode.index].printVR()))
             nodeweight = weights[map2[anode.index].opcode]
-            print("Node weight is " + str(nodeweight) + " its startcycle " + str(anode.startcycle) + " current cycle " + str(cycle))
+            # print("Node weight is " + str(nodeweight) + " its startcycle " + str(anode.startcycle) + " current cycle " + str(cycle))
             if nodeweight + anode.startcycle - cycle == 0:
                 anode.status = RETIRED
                 to_be_retired.add(anode)
                 for kid in anode.kids:
                     allgood = True
                     for parent in kid[1].parents:
-                        if (parent[1].status == RETIRED or (parent[1].status == ACTIVE and parent[0] == 1)):
-                            continue
-                        else:
+                        if (parent[1].status != RETIRED and not (parent[1].status == ACTIVE and parent[0] == 1)):
                             allgood = False
                     if allgood == True:
-                        print("it added a kid")
-                        if (kid[1].status == READY):
-                            print("BAD")
-                        kid[1].status == READY
+                        # print("it added a kid")
+                        # if (kid[1].status == READY):
+                            # print("BAD")
+                        kid[1].status = READY
                         readySet.add(kid[1])
                         # print("node added is ")
-                        map2[kid[1].index].printVR
+                        #map2[kid[1].index].printVR
             elif cycle - anode.startcycle == 1:
                 for kid in anode.kids:
                     allgood = True
                     for parent in kid[1].parents:
-                        print("new parent")
-                        map2[parent[1].index].printVR()
-                        if (parent[1].status == RETIRED or (parent[1].status == ACTIVE and parent[0] == 1)):
-                            continue
-                        else:
+                        # print("new parent")
+                        #map2[parent[1].index].printVR()
+                        if (parent[1].status != RETIRED and not (parent[1].status == ACTIVE and parent[0] == 1)):
                             allgood = False
                     if allgood == True:
-                        print("it added a kid")
-                        if (kid[1].status == READY):
-                            print("BAD")
-                        kid[1].status == READY
+                        # print("it added a kid")
+                        # if (kid[1].status == READY):
+                        #     print("BAD")
+                        kid[1].status = READY
                         readySet.add(kid[1])
         for anode in to_be_retired:
             if anode.status == RETIRED:
