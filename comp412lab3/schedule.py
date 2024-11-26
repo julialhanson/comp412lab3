@@ -310,7 +310,7 @@ def main ():
     if os.path.exists(filename) == False:
         print("ERROR: file does not exists or filepath is missing", file=stderr)
         return
-    elif "schedule" in argslst:
+    else: 
         leaves, roots, mappy = buildgraph(filename)
         weightit(roots, mappy)
         schedule(leaves, mappy)
@@ -532,21 +532,24 @@ def schedule(leaves, map):
     dummynop.opcode = NOP
    
     while ((len(readySet) + len(activeSet)) != 0):
-        #print("NEW CYCLE NEW CYCLE ------------------- " + str(cycle))
+        print("NEW CYCLE NEW CYCLE ------------------- " + str(cycle))
         op1 = ScheduleNode(-3)
         i = 0
         for leaf in readySet: 
             # print("new leaf weight is " + str(leaf.weight))
             # print("old op weight is " + str(op1.weight))
             if leaf.weight > op1.weight:
+                # print("leafweight is" + str(leaf.weight))
                 op1 = leaf
                 # print("op1 updated")
         if (op1.index != -3):
+            
             readySet.remove(op1)
             op1.status = ACTIVE
             op1.startcycle = cycle
             activeSet.add(op1)
-            
+        # print("OP1 did not register")
+   
         ### this got here and makes enough sense, it did go through the weights and update properly    
         
         op1opcode = map2[op1.index].opcode
@@ -571,6 +574,7 @@ def schedule(leaves, map):
             if leaf.weight > op2.weight:
                 op2 = leaf
         if op2.index != -3:
+            
             readySet.remove(op2)
             activeSet.add(op2)
             op2.status = ACTIVE
@@ -636,14 +640,16 @@ def schedule(leaves, map):
                         # if (kid[1].status == READY):
                         #     print("BAD")
                         kid[1].status = READY
-                        readySet.add(kid[1])
+                        #readySet.add(kid[1])
         for anode in to_be_retired:
             if anode.status == RETIRED:
                 activeSet.remove(anode)
-                # print("NODE REMOVED")
-                # map2[anode.index].printVR()
-        # print("length of ready set is " + str(len(readySet)))
-        # print("length of active set is " + str(len(activeSet)))
+        print("length ready " + str(len(readySet)))
+        print(readySet)
+        for node in readySet:
+            map2[node.index].printVR()
+        print("done")
+      
     return
 
 if __name__ == "__main__":
