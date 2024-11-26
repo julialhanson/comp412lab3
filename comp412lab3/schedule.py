@@ -1,4 +1,4 @@
-from collections import deque
+#from collections import deque
 import os
 from sys import argv, stderr, stdout
 from scanner import Scanner
@@ -373,8 +373,8 @@ def rename(filename):
         idx -= 1
         
         nodeList[listidx] = curr
-        print(listidx)
-        curr.printVR()
+        # print(listidx)
+        # curr.printVR()
         listidx -= 1
         curr = curr.prev
     # print(nodeList)
@@ -403,7 +403,7 @@ def buildgraph(filename):
     outputs = set()
     mrs = None
     mro = None
-
+    
     reads = set()
     nodes, vrName = rename(filename)
     
@@ -426,7 +426,6 @@ def buildgraph(filename):
                 parentNode = map1[nodes[i].vr2]
                 parentNode.kids.add((weights[nodes[parentNode.index].opcode], newnode))
                 newnode.parents.add((weights[nodes[parentNode.index].opcode], parentNode))
-        
         if nodes[i].opcode == OUTPUT:
             for item in outputs:
                 parentNode = item
@@ -438,8 +437,9 @@ def buildgraph(filename):
         if nodes[i].opcode == OUTPUT or nodes[i].opcode == LOAD:
             reads.add(newnode)
             storeNode = mrs
-            storeNode.kids.add((1, newnode))
-            newnode.parents.add((1, storeNode))
+            if storeNode != None:
+                storeNode.kids.add((1, newnode))
+                newnode.parents.add((1, storeNode))
             
         if nodes[i].opcode == STORE:
             if mrs != None:
@@ -458,41 +458,34 @@ def buildgraph(filename):
     if mro != None:
         roots.add(mro)
     
-    print("roots")
-    for item in roots:
-        print(item.index)
-        nodes[item.index].printVR()
-        
-    print("leaves")
-    for item in leaves:
-        print(item.index)
-        nodes[item.index].printVR()
+
     return leaves, roots, nodes
      
 def weightit(roots, map):
+    
     map4 = map
-    queue = deque()
-    print("GOT IN WEIGHT")
+    queue = []
+    # print("GOT IN WEIGHT")
     for root in roots:
         root.weight = 10 * weights[map4[root.index].opcode] + len(root.kids)
-        print("WEIGHT OF ROOT IS " + str(root.weight))
-        print(root.parents)
+        # print("WEIGHT OF ROOT IS " + str(root.weight))
+        # print(root.parents)
         queue.append(root)
     while queue:
-        print("yes queue")
+        # print("yes queue")
         
-        node = queue.popleft()
-        print("kid of nodes is " + str(node.kids))
-        print("NEW LEN QUEUE IS " + str(len(queue)))
+        node = queue.pop(0)
+        # print("kid of nodes is " + str(node.kids))
+        # print("NEW LEN QUEUE IS " + str(len(queue)))
         for parent in node.parents:
-            print("OLD WEIGHT IS " + str(parent[0]))
+            # print("OLD WEIGHT IS " + str(parent[0]))
             
             newweight = node.weight + 10 * parent[0] + len(parent[1].kids) - len(node.kids)
             if (newweight > parent[1].weight):
-                print("weight changed")
+                # print("weight changed")
                 parent[1].weight = newweight
                 queue.append(parent[1])
-            print("NEW WEIGHT IS " + str(parent[1].weight))
+            # print("NEW WEIGHT IS " + str(parent[1].weight))
    
 def printScheduleNodes(node1, node2):
     str1 = ""
@@ -519,7 +512,7 @@ def printScheduleNodes(node1, node2):
         str2 = (f"{wordArr[node2.opcode]} {node2.sr1} => r{node2.vr3}")
     elif (node2.opcode == ADD or node2.opcode == SUB or node2.opcode == MULT or node2.opcode == LSHIFT or node2.opcode == RSHIFT):
         str2 = (f"{wordArr[node2.opcode]} r{node2.vr1}, r{node2.vr2} => r{node2.vr3}")
-    elif (node1.opcode == OUTPUT):
+    elif (node2.opcode == OUTPUT):
         #print("SOMETHING HAPPENS HERE 2")
         str2 = (f"{wordArr[node2.opcode]} {node2.sr1}")
     else:
@@ -528,7 +521,7 @@ def printScheduleNodes(node1, node2):
     return str1, str2                
                
 def schedule(leaves, map):
-    
+   
     cycle = 1
     
     readySet = leaves
@@ -573,7 +566,7 @@ def schedule(leaves, map):
             if leafop == MULT and op1opcode == MULT:
                 continue
             if leafop == OUTPUT and op1opcode == OUTPUT:
-                print("does it go in here?")
+                # print("does it go in here?")
                 continue
             if leaf.weight > op2.weight:
                 op2 = leaf
