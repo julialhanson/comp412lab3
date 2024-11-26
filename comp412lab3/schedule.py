@@ -485,7 +485,9 @@ def weightit(roots, map):
                 # print("weight changed")
                 parent[1].weight = newweight
                 queue.append(parent[1])
-            # print("NEW WEIGHT IS " + str(parent[1].weight))
+            #print("NEW WEIGHT IS " + str(parent[1].weight))
+            if (node.index == 8):
+                print("bAD BAD BAD")
    
 def printScheduleNodes(node1, node2):
     str1 = ""
@@ -536,18 +538,28 @@ def schedule(leaves, map):
         op1 = ScheduleNode(-3)
         i = 0
         for leaf in readySet: 
+            if leaf.index == 8:
+                print("op1 leaf is")
+                map2[leaf.index].printVR()
+                print("op1 leaf weight is" + str(leaf.weight))
+                print("op1 leaf index is" + str(leaf.index))
+                print("num kids is " + str(len(leaf.kids)))
+                print("num paernts is " + str(len(leaf.parents)))
             # print("new leaf weight is " + str(leaf.weight))
             # print("old op weight is " + str(op1.weight))
             if leaf.weight > op1.weight:
                 # print("leafweight is" + str(leaf.weight))
                 op1 = leaf
                 # print("op1 updated")
+            else:
+                print("leaf didnt get updated")
         if (op1.index != -3):
-            
             readySet.remove(op1)
             op1.status = ACTIVE
             op1.startcycle = cycle
             activeSet.add(op1)
+        else: 
+            print("no leaf got moved to active set")
         # print("OP1 did not register")
    
         ### this got here and makes enough sense, it did go through the weights and update properly    
@@ -562,6 +574,8 @@ def schedule(leaves, map):
         
         op2 = ScheduleNode(-3)
         for leaf in readySet:
+            print("leaf is")
+            map2[leaf.index].printVR()
             
             leafop = map2[leaf.index].opcode
             if (leafop == LOAD or leafop == STORE) and (op1opcode == LOAD or op1opcode == STORE):
@@ -633,14 +647,14 @@ def schedule(leaves, map):
                     for parent in kid[1].parents:
                         # print("new parent")
                         #map2[parent[1].index].printVR()
-                        if (parent[1].status != RETIRED and not (parent[1].status == ACTIVE and parent[0] == 1)):
+                        if (parent[1].status != RETIRED):
                             allgood = False
                     if allgood == True:
                         # print("it added a kid")
                         # if (kid[1].status == READY):
                         #     print("BAD")
                         kid[1].status = READY
-                        #readySet.add(kid[1])
+                        readySet.add(kid[1])
         for anode in to_be_retired:
             if anode.status == RETIRED:
                 activeSet.remove(anode)
