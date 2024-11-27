@@ -374,9 +374,10 @@ def rename(filename):
         
         nodeList[listidx] = curr
         # print(listidx)
-        # curr.printVR()
+        curr.printVR()
         listidx -= 1
         curr = curr.prev
+        #curr.printVR()
     # print(nodeList)
     return nodeList, vrName
     #return head, vrName
@@ -404,6 +405,7 @@ def buildgraph(filename):
     mrs = None
     mro = None
     
+    schedulenodelist = []
     reads = set()
     nodes, vrName = rename(filename)
     
@@ -416,19 +418,25 @@ def buildgraph(filename):
             
             if nodes[i].vr3 != INVALID:
                 map1[nodes[i].vr3] = newnode
-                if nodes[i].nu3 == float('inf'):
-                    roots.add(newnode)
+                
             if nodes[i].vr1 != INVALID:
+                print("adding")
                 parentNode = map1[nodes[i].vr1]
                 parentNode.kids.add((weights[nodes[parentNode.index].opcode], newnode))
+                if ((weights[nodes[parentNode.index].opcode], newnode) not in parentNode.kids):
+                    print("this is bad")
                 newnode.parents.add((weights[nodes[parentNode.index].opcode], parentNode))
             if nodes[i].vr2 != INVALID:
+                print("add 2")
                 parentNode = map1[nodes[i].vr2]
                 parentNode.kids.add((weights[nodes[parentNode.index].opcode], newnode))
+                if ((weights[nodes[parentNode.index].opcode], newnode) not in parentNode.kids):
+                    print("this is bad")
                 newnode.parents.add((weights[nodes[parentNode.index].opcode], parentNode))
         if nodes[i].opcode == OUTPUT:
             for item in outputs:
                 parentNode = item
+                
                 parentNode.kids.add((1, newnode))
                 newnode.parents.add((1, parentNode))
             outputs.add(newnode)
@@ -448,17 +456,28 @@ def buildgraph(filename):
             for read in reads:
                 parentNode = read
                 parentNode.kids.add((1, newnode))
-                
+            
                 newnode.parents.add((1, parentNode))
             mrs = newnode
             
         if len(newnode.parents) == 0:
             newnode.status = READY
             leaves.add(newnode)
+        schedulenodelist.append(newnode)
     if mro != None:
         roots.add(mro)
     
-
+    for node in schedulenodelist:
+        if len(node.kids) == 0:
+            roots.add(node)
+        
+    print("NUMBER OF ROOTS ARE " + str(len(roots)))
+    for root in roots:
+        print(nodes[root.index].printVR())
+        print("num of parents for root are " + str(len(root.parents)))
+        print("parent is")
+        for parent in root.parents:
+            nodes[parent[1].index].printVR()
     return leaves, roots, nodes
      
 def weightit(roots, map):
@@ -471,10 +490,14 @@ def weightit(roots, map):
         # print("WEIGHT OF ROOT IS " + str(root.weight))
         # print(root.parents)
         queue.append(root)
+        print("starting root is ")
+        map4[root.index].printVR()
     while queue:
         # print("yes queue")
         
         node = queue.pop(0)
+        print("next node is")
+        map4[node.index].printVR()
         # print("kid of nodes is " + str(node.kids))
         # print("NEW LEN QUEUE IS " + str(len(queue)))
         for parent in node.parents:
